@@ -2,7 +2,7 @@ import vine from "@vinejs/vine";
 import { SETTINGS_KEYS } from "../../constants/kv_store.js";
 import type { KVStoreKey } from "../../types/kv_store.js";
 import { CONTEXT_LADDER } from "../utils/context_window.js";
-import { RESPONSE_STYLE_PRESETS } from "../../constants/ollama.js";
+import { EMBEDDING_MODELS, RESPONSE_STYLE_PRESETS } from "../../constants/ollama.js";
 
 export const getSettingSchema = vine.compile(vine.object({
     key: vine.enum(SETTINGS_KEYS),
@@ -61,6 +61,16 @@ export function validateSettingValue(key: KVStoreKey, value: unknown): string | 
             const num = Number(value)
             if (!Number.isInteger(num) || num < 0) {
                 return 'The per-window data cap must be a whole number of bytes (0 = unlimited).'
+            }
+            return null
+        }
+        case 'rag.embeddingModel': {
+            // Empty clears the setting (reverts to the default model).
+            if (value === '' || value === undefined || value === null) {
+                return null
+            }
+            if (typeof value !== 'string' || !Object.hasOwn(EMBEDDING_MODELS, value)) {
+                return `Embedding model must be one of: ${Object.keys(EMBEDDING_MODELS).join(', ')}.`
             }
             return null
         }

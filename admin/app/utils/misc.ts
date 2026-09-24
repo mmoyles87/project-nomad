@@ -1,3 +1,5 @@
+import { EMBEDDING_MODEL_NAME, EMBEDDING_MODELS } from '../../constants/ollama.js'
+
 export function formatSpeed(bytesPerSecond: number): string {
   if (bytesPerSecond < 1024) return `${bytesPerSecond.toFixed(0)} B/s`
   if (bytesPerSecond < 1024 * 1024) return `${(bytesPerSecond / 1024).toFixed(1)} KB/s`
@@ -10,6 +12,25 @@ export function toTitleCase(str: string): string {
     .split(' ')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ')
+}
+
+/**
+ * Resolve the knowledge-base embedding model from the `rag.embeddingModel`
+ * setting. An unset or unknown value falls back to the default model, so an
+ * unset setting leaves prior behaviour untouched.
+ */
+export function pickEmbeddingModel(configured: string | null | undefined) {
+  const trimmed = configured?.trim()
+  const name = trimmed && Object.hasOwn(EMBEDDING_MODELS, trimmed) ? trimmed : EMBEDDING_MODEL_NAME
+  return { name, ...EMBEDDING_MODELS[name] }
+}
+
+/**
+ * True for a model in EMBEDDING_MODELS, whose names don't all contain "embed"
+ * (bge-m3). Keeps them out of chat model lists.
+ */
+export function isEmbeddingModelName(model: string): boolean {
+  return Object.hasOwn(EMBEDDING_MODELS, model.replace(/:latest$/, ''))
 }
 
 /**

@@ -65,6 +65,25 @@ export const FALLBACK_RECOMMENDED_OLLAMA_MODELS: NomadOllamaModel[] = [
 export const EMBEDDING_MODEL_NAME = 'nomic-embed-text:v1.5'
 
 /**
+ * Embedding models the knowledge base can be built with (`rag.embeddingModel`),
+ * keyed by Ollama model name. Vectors from two models are not comparable, so
+ * changing the setting needs a Reset & Rebuild of the knowledge base.
+ */
+export const EMBEDDING_MODELS: Record<
+  string,
+  { dimension: number; documentPrefix: string; queryPrefix: string }
+> = {
+  // Nomic Embed Text v1.5 uses task-specific prefixes for optimal performance
+  [EMBEDDING_MODEL_NAME]: {
+    dimension: 768,
+    documentPrefix: 'search_document: ',
+    queryPrefix: 'search_query: ',
+  },
+  // Multilingual (100+ languages), 8K context; dense retrieval takes no prefixes
+  'bge-m3': { dimension: 1024, documentPrefix: '', queryPrefix: '' },
+}
+
+/**
  * Server-side context floor set as `OLLAMA_CONTEXT_LENGTH` on the nomad_ollama
  * container.
  *
